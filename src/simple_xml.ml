@@ -240,9 +240,9 @@ and t = Stable.V2.t =
   | Text of Printable_string.t
 [@@deriving sexp_of, compare, equal, hash, quickcheck ~shrinker ~observer]
 
-(* When generating an entire XML element, it needs to be internally consistent.
-   All namespaces used should be declared at some point, so we need to do some
-   extra work to make sure we only reference namespaces previously defined. *)
+(* When generating an entire XML element, it needs to be internally consistent. All
+   namespaces used should be declared at some point, so we need to do some extra work to
+   make sure we only reference namespaces previously defined. *)
 module Fully_defined_xml_generator = struct
   open Quickcheck.Generator
   open Let_syntax
@@ -371,11 +371,13 @@ let quickcheck_shrinker_element =
 ;;
 
 let () =
-  Sexplib.Conv.Exn_converter.add [%extension_constructor Xmlm.Error] (function
-    | Xmlm.Error ((line, col), error) ->
-      let error = Xmlm.error_message error in
-      [%message "Error parsing xml" (line : int) (col : int) (error : string)]
-    | _ -> assert false)
+  Sexplib.Conv.Exn_converter.add
+    [%extension_constructor Xmlm.Error]
+    (Obj.magic_portable (function
+      | Xmlm.Error ((line, col), error) ->
+        let error = Xmlm.error_message error in
+        [%message "Error parsing xml" (line : int) (col : int) (error : string)]
+      | _ -> assert false))
 ;;
 
 let parse_input input =
